@@ -1,6 +1,11 @@
+use crate::server::run;
+use std::env;
 mod server;
 
-use std::env;
+#[cfg(test)]
+mod server_tests;
+
+
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -9,5 +14,12 @@ async fn main() -> std::io::Result<()> {
 
     let server_address = format!("{}:{}", host, port);
 
-    server::run(&server_address).await
+    run(&server_address).await
 }
+
+
+pub fn add(a: i32, b: i32) -> i32 {
+    a + b
+}
+
+
