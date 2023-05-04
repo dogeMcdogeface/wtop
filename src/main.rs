@@ -1,32 +1,13 @@
-use actix_files::NamedFile;
-use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
-use serde::{Deserialize, Serialize};
+mod server;
 
-#[derive(Serialize, Deserialize)]
-struct Message {
-    message: String,
-}
-
-#[get("/api")]
-async fn api() -> impl Responder {
-    let message = Message {
-        message: String::from("Hello, world!"),
-    };
-    HttpResponse::Ok().json(message)
-}
-
-async fn index() -> actix_web::Result<NamedFile> {
-    Ok(NamedFile::open("./src/index.html")?)
-}
+use std::env;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| {
-        App::new()
-            .service(api)
-            .route("/index", web::get().to(index))
-    })
-        .bind("127.0.0.1:8080")?
-        .run()
-        .await
+    let host = env::var("HOST").unwrap_or_else(|_| String::from("127.0.0.1"));
+    let port = env::var("PORT").unwrap_or_else(|_| String::from("3680"));
+
+    let server_address = format!("{}:{}", host, port);
+
+    server::run(&server_address).await
 }
