@@ -1,6 +1,13 @@
+use serde::{Deserialize, Serialize};
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
-use serde::Serialize;
 use std::fs;
+
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Config {
+    pub host: String,
+    pub port: String,
+}
 
 
 #[derive(Serialize)]
