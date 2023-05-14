@@ -31,7 +31,10 @@ pub(crate) async fn serve_api(path: web::Path<String>) -> impl Responder {
 }
 
 
-pub async fn run(server_address: &str) -> std::io::Result<()> {
+pub async fn run(config: Config) -> std::io::Result<()> {
+    let server_address = format!("{}:{}", config.host, config.port);
+
+
     println!("Starting server at http://{}", server_address);
     HttpServer::new(|| App::new()
         .service(serve_index)
