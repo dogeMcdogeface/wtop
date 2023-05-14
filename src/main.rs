@@ -1,9 +1,8 @@
 use crate::server::run;
 use std::env;
 mod server;
-
-#[cfg(test)]
-mod server_tests;
+mod settings_loader;
+mod system_observer;
 
 
 
@@ -22,4 +21,8 @@ pub fn add(a: i32, b: i32) -> i32 {
     a + b
 }
 
+
+
+#[cfg(test)]
+mod server_tests;
 
