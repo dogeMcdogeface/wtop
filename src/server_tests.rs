@@ -1,10 +1,11 @@
+use std::fs;
+
 #[cfg(test)]
 
-use actix_web::{test, App };
-use std::fs;
+use actix_web::{App, test};
+
 use crate::server::serve_api;
 use crate::server::serve_index;
-
 
 #[actix_rt::test]
 async fn test_index() {

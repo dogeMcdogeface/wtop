@@ -1,7 +1,9 @@
+use std::fmt::Debug;
 use std::fs::File;
 use std::io::prelude::*;
+use std::io::Write;
 use std::path::Path;
-use std::fmt::Debug;
+
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
@@ -50,8 +52,6 @@ pub fn init<T>(config_name: &str) -> T
     println!("Loaded Setting: {:?}", config);
     return config;
 }
-
-use std::io::Write;
 
 fn save_config<T>(config_name: &str, config: &T)
     where T: Serialize,

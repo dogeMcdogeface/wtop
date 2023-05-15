@@ -6,12 +6,13 @@ use actix_web::web::Data;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 
+//------------------------------------------------------------------------------------------------//
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
     pub poll_rate: u64,
 }
 
-
+//------------------------------------------------------------------------------------------------//
 #[derive(Debug, Serialize, Default)]
 pub struct SystemStatus {
     pub governor: u64,
@@ -21,6 +22,8 @@ pub struct SystemStatus {
     pub zzz: u64,
 }
 
+
+//------------------------------------------------------------------------------------------------//
 pub fn start(config: Config) -> Data<Mutex<SystemStatus>> {
     let data = Data::new(Mutex::new(SystemStatus::default()));
     let data_clone = Data::clone(&data);

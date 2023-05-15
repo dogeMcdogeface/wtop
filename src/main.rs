@@ -4,7 +4,7 @@ mod server;
 mod system_observer;
 mod settings_loader;
 
-
+//------------------------------------------------------------------------------------------------//
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
     pub server: server::Config,
@@ -23,7 +23,7 @@ impl Default for Config {
     }
 }
 
-
+//------------------------------------------------------------------------------------------------//
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
 
@@ -38,6 +38,7 @@ async fn main() -> std::io::Result<()> {
 }
 
 
+//------------------------------------------------------------------------------------------------//
 #[cfg(test)]
 mod server_tests {
     // your server tests

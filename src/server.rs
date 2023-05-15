@@ -14,11 +14,7 @@ pub struct Config {
     pub host: String,
     pub port: String,
 }
-#[derive(Serialize)]
-struct ContentResponse<'a> {
-    content: String,   // Assuming ContentType is the type of `path.into_inner()`
-    response: &'a SystemStatus, // Assuming SystemStatus is the type of `system_status.deref()`
-}
+
 
 //------------------------------------------------------------------------------------------------//
 #[get("/")]
@@ -30,18 +26,18 @@ async fn serve_index() -> impl Responder {
 
 #[get("/api/{path:.*}")]
 async fn serve_api(req: HttpRequest, path: web::Path<String>) -> impl Responder {
-    let status_mutex = req.app_data::<Data<Mutex<SystemStatus>>>().unwrap();
-    let system_status = status_mutex.lock().unwrap();
+    let system_status = req.app_data::<Data<Mutex<SystemStatus>>>().unwrap().lock().unwrap();
 
+    #[derive(Serialize)]
+    struct ContentResponse<'a> {
+        content: String,
+        response: &'a SystemStatus,
+    }
 
-
-    let content = path.into_inner();
-    let response = system_status.deref();
-    let content_response = ContentResponse {
-        content,
-        response,
-    };
-    HttpResponse::Ok().json(content_response)
+    HttpResponse::Ok().json(ContentResponse {
+        content: path.into_inner(),
+        response: system_status.deref(),
+    })
 }
 
 
