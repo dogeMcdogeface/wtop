@@ -73,22 +73,16 @@ mod tests {
         // Wait for a couple of poll cycles
         thread::sleep(Duration::from_secs(test_poll_rate*2));
 
-        let locked_data = data.lock().unwrap();
-
-        // Access the fields of SystemStatus within the locked scope
-        let governor = locked_data.governor;
-        let temp1 = locked_data.temp1;
-        let freq1 = locked_data.freq1;
-        let gpu_temp = locked_data.gpu_temp.clone();
-        let zzz = locked_data.zzz;
-
-        drop(locked_data); // Release the lock
+        let default_status = SystemStatus::default();
+        let locked_status = data.lock().unwrap();
 
         // Check that the SystemStatus fields have been updated
-        assert_ne!(governor, 0);
-        assert_ne!(temp1, 0);
-        assert_ne!(freq1, 0);
-        assert_ne!(gpu_temp, "");
-        assert_ne!(zzz, 0);
+        assert_ne!(locked_status.governor, default_status.governor);
+        assert_ne!(locked_status.temp1, default_status.temp1);
+        assert_ne!(locked_status.freq1, default_status.freq1);
+        assert_ne!(locked_status.gpu_temp, default_status.gpu_temp);
+        assert_ne!(locked_status.zzz, default_status.zzz);
+
+        drop(locked_status); // Release the lock
     }
 }
