@@ -1,12 +1,11 @@
 use std::fs;
-use std::ops::Deref;
 use std::sync::Mutex;
 
 use actix_web::{App, get, HttpRequest, HttpResponse, HttpServer, Responder, web};
 use actix_web::web::Data;
 use serde::{Deserialize, Serialize};
 
-use crate::system_observer::SystemStatus;
+use crate::system_status::SystemStatus;
 
 //------------------------------------------------------------------------------------------------//
 #[derive(Debug, Serialize, Deserialize)]
@@ -26,7 +25,15 @@ async fn serve_index() -> impl Responder {
 
 #[get("/api/{path:.*}")]
 async fn serve_api(req: HttpRequest, path: web::Path<String>) -> impl Responder {
-    let system_status = req.app_data::<Data<Mutex<SystemStatus>>>().unwrap().lock().unwrap();
+    let path_inner = path.into_inner();
+    let authorized = path_inner == "authorized";
+
+    let system_status = req.app_data::<Data<Mutex<SystemStatus>>>()
+        .unwrap()
+        .lock()
+        .unwrap();
+    let auth_status = SystemStatus::new_with_auth(&system_status);
+
 
     #[derive(Serialize)]
     struct ContentResponse<'a> {
@@ -35,10 +42,11 @@ async fn serve_api(req: HttpRequest, path: web::Path<String>) -> impl Responder 
     }
 
     HttpResponse::Ok().json(ContentResponse {
-        content: path.into_inner(),
-        response: system_status.deref(),
+        content: path_inner,
+        response: if authorized { &system_status } else { &auth_status },
     })
 }
+
 
 
 //------------------------------------------------------------------------------------------------//
@@ -59,10 +67,14 @@ pub async fn run(config: Config, status_mutex: Data<Mutex<SystemStatus>>) -> std
 
 
 
+//------------------------------------------------------------------------------------------------//
+//                               TESTS                                                            //
+//------------------------------------------------------------------------------------------------//
 #[cfg(test)]
 mod tests {
     use super::*;
     use actix_web::{test, App};
+    use crate::system_status::StatusValue;
 
     #[actix_rt::test]
     async fn test_serve_index() {

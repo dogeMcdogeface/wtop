@@ -5,23 +5,15 @@ use std::time::Duration;
 use actix_web::web::Data;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
+use crate::system_status::SystemStatus;
+use crate::system_status::StatusValue;
 
 //------------------------------------------------------------------------------------------------//
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Config {
     pub poll_rate: u64,
+    pub permissions: SystemStatus,
 }
-
-//------------------------------------------------------------------------------------------------//
-#[derive(Debug, Serialize, Default)]
-pub struct SystemStatus {
-    pub governor: u64,
-    pub temp1: u64,
-    pub freq1: u64,
-    pub gpu_temp: String,
-    pub zzz: u64,
-}
-
 
 //------------------------------------------------------------------------------------------------//
 pub fn start(config: Config) -> Data<Mutex<SystemStatus>> {
@@ -30,44 +22,78 @@ pub fn start(config: Config) -> Data<Mutex<SystemStatus>> {
     thread::spawn(move || {
         loop {
             thread::sleep(Duration::from_secs(config.poll_rate));
-            *data_clone.lock().unwrap() = read_stats();
+            *data_clone.lock().unwrap() = read_stats(&config);
         }
     });
     return data;
 }
 
 
-fn read_stats() -> SystemStatus {
-    let mut rng = rand::thread_rng();
+fn read_stats(config: &Config) -> SystemStatus {
     let system_status = SystemStatus {
-        governor: rng.gen(),
-        temp1: rng.gen(),
-        freq1: rng.gen(),
-        gpu_temp: "Sample GPU Temp".to_owned(),
-        zzz: rng.gen(),
+        governor: StatusValue::new_if_enabled(read_governor, &config.permissions.governor),
+        temp1: StatusValue::new_if_enabled(read_temp1, &config.permissions.temp1),
+        freq1: StatusValue::new_if_enabled(read_freq1, &config.permissions.freq1),
+        gpu_temp: StatusValue::new_if_enabled(read_gpu_temp, &config.permissions.gpu_temp),
+        zzz: StatusValue::new_if_enabled(read_zzz, &config.permissions.zzz),
     };
     return system_status;
 }
 
+//------------------------------------------------------------------------------------------------//
 
+fn read_governor() -> u64 {
+    // Example implementation for governor field
+    let mut rng = rand::thread_rng();
+    rng.gen()
+}
+
+fn read_temp1() -> u64 {
+    // Example implementation for temp1 field
+    let mut rng = rand::thread_rng();
+    rng.gen()
+}
+
+fn read_freq1() -> u64 {
+    // Example implementation for freq1 field
+    let mut rng = rand::thread_rng();
+    rng.gen()
+}
+
+fn read_gpu_temp() -> u64 {
+    // Example implementation for gpu_temp field
+    let mut rng = rand::thread_rng();
+    rng.gen()
+}
+
+fn read_zzz() -> u64 {
+    // Example implementation for zzz field
+    let mut rng = rand::thread_rng();
+    rng.gen()
+}
+
+
+//------------------------------------------------------------------------------------------------//
+//                               TESTS                                                            //
+//------------------------------------------------------------------------------------------------//
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn test_read_stats() {
-        let stats = read_stats();
-        assert_ne!(stats.governor, 0); // Test governor value
-        assert_ne!(stats.temp1, 0); // Test temp1 value
-        assert_ne!(stats.freq1, 0); // Test freq1 value
-        assert_ne!(stats.gpu_temp, ""); // Test gpu_temp value
-        assert_ne!(stats.zzz, 0); // Test zzz value
+        let stats = read_stats(&Default::default());
+        assert_ne!(stats.governor, Default::default()); // Test governor value
+        assert_ne!(stats.temp1, Default::default()); // Test temp1 value
+        assert_ne!(stats.freq1, Default::default()); // Test freq1 value
+        assert_ne!(stats.gpu_temp, Default::default()); // Test gpu_temp value
+        assert_ne!(stats.zzz, Default::default()); // Test zzz value
     }
 
     #[actix_rt::test]
     async fn test_start() {
         let test_poll_rate = 1;
-        let config = Config { poll_rate: test_poll_rate };
+        let config = Config { poll_rate: test_poll_rate, permissions: Default::default() };
         let data = start(config);
 
         // Wait for a couple of poll cycles

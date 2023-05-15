@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 mod server;
 mod system_observer;
 mod settings_loader;
+mod system_status;
 
 //------------------------------------------------------------------------------------------------//
 #[derive(Debug, Serialize, Deserialize)]
@@ -18,7 +19,10 @@ impl Default for Config {
                 host: String::from("127.0.0.1"),
                 port: String::from("3680"),
             },
-            observer: system_observer::Config { poll_rate: 1 },
+            observer: system_observer::Config {
+                poll_rate: 1,
+                permissions: Default::default(),
+            },
         }
     }
 }
@@ -40,6 +44,6 @@ async fn main() -> std::io::Result<()> {
 
 //------------------------------------------------------------------------------------------------//
 #[cfg(test)]
-mod server_tests {
-    // your server tests
+mod tests {
+    // tests
 }
