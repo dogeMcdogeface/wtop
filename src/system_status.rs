@@ -1,8 +1,12 @@
+use actix_web::http::header::IfRange::Date;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 //------------------------------------------------------------------------------------------------//
 #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct SystemStatus {
+    #[serde( skip_deserializing, skip_serializing_if = "should_skip_read_at" )]
+    pub read_at: DateTime<Utc>,
     pub governor: StatusValue,
     pub temp1: StatusValue,
     pub freq1: StatusValue,
@@ -10,9 +14,14 @@ pub struct SystemStatus {
     pub zzz: StatusValue,
 }
 
+fn should_skip_read_at(read_at: &DateTime<Utc>) -> bool {
+    read_at.timestamp() == 0
+}
+
 impl SystemStatus {
     pub fn new_with_auth(source: &SystemStatus) -> SystemStatus {
         SystemStatus {
+            read_at: source.read_at,
             governor:  StatusValue::new_with_auth(&source.governor),
             temp1:  StatusValue::new_with_auth(&source.temp1),
             freq1:  StatusValue::new_with_auth(&source.freq1),
@@ -26,6 +35,7 @@ impl SystemStatus {
 //------------------------------------------------------------------------------------------------//
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct StatusValue {
+    //#[config(skip)]
     value: u64,
     pub lock: StatusEnum,
 }
@@ -74,6 +84,7 @@ mod tests {
     #[test]
     fn test_system_status_new_with_auth() {
         let source = SystemStatus {
+            read_at: Default::default(),
             governor: StatusValue {
                 value: 10,
                 lock: StatusEnum::Auth,
@@ -97,6 +108,7 @@ mod tests {
         };
 
         let expected = SystemStatus {
+            read_at: Default::default(),
             governor: StatusValue {
                 value: 0,
                 lock: StatusEnum::Auth,

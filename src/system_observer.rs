@@ -3,6 +3,7 @@ use std::thread;
 use std::time::Duration;
 
 use actix_web::web::Data;
+use chrono::Utc;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use crate::system_status::SystemStatus;
@@ -31,6 +32,7 @@ pub fn start(config: Config) -> Data<Mutex<SystemStatus>> {
 
 fn read_stats(config: &Config) -> SystemStatus {
     let system_status = SystemStatus {
+        read_at: Utc::now(),
         governor: StatusValue::new_if_enabled(read_governor, &config.permissions.governor),
         temp1: StatusValue::new_if_enabled(read_temp1, &config.permissions.temp1),
         freq1: StatusValue::new_if_enabled(read_freq1, &config.permissions.freq1),
