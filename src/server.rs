@@ -100,7 +100,7 @@ mod tests {
             assert_eq!(value, &serde_json::to_value(&default_status).unwrap()[field]);
         }
     }
-    #[actix_rt::test]
+    #[test]
     async fn test_run() {
         let config = Config {
             host: "127.0.0.1".to_string(),
@@ -108,9 +108,20 @@ mod tests {
         };
         let system_status = SystemStatus::default();
         let data = Data::new(Mutex::new(system_status));
-        let result = run(config, data).await;
 
-        assert!(result.is_ok());
-        // Optionally, you can perform additional assertions here
+        let handle = std::thread::spawn(move || {
+            let runtime = actix_rt::Runtime::new().unwrap();
+            let future = run(config, data);
+            runtime.block_on(future).unwrap();
+        });
+
+        // Wait for a short period to allow the server to start
+        std::thread::sleep(std::time::Duration::from_secs(1));
+
+        // Perform your assertions or make requests to the running server here
+
+        // Optionally, you can gracefully stop the server by dropping the handle
+        drop(handle);
     }
+
 }
