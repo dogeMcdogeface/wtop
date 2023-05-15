@@ -74,7 +74,6 @@ pub async fn run(config: Config, status_mutex: Data<Mutex<SystemStatus>>) -> std
 mod tests {
     use super::*;
     use actix_web::{test, App};
-    use crate::system_status::StatusValue;
 
     #[actix_rt::test]
     async fn test_serve_index() {
