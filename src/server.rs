@@ -51,6 +51,8 @@ pub async fn run(config: Config, status_mutex: Data<Mutex<SystemStatus>>) -> std
             .service(serve_api)
             .service(fs::Files::new("/files", "./www").show_files_listing())//Order is important...
             .service(fs::Files::new("/", "./www").index_file("index.html"))
+            //                   //TODO user authentication
+            //.default_service() //TODO custom 404 handling
     })
         .bind(server_address)?
         .run()
