@@ -1,7 +1,7 @@
 use std::sync::Mutex;
 
 use actix_files as fs;
-use actix_web::{App, get, HttpRequest, HttpResponse, HttpServer, Responder, web};
+use actix_web::{App, get, HttpRequest, HttpResponse, HttpServer, middleware, Responder, web};
 use actix_web::web::Data;
 use serde::{Deserialize, Serialize};
 
@@ -43,13 +43,14 @@ async fn serve_api(req: HttpRequest, path: web::Path<String>) -> impl Responder 
 //------------------------------- SERVER INIT ----------------------------------------------------//
 pub async fn run(config: Config, status_mutex: Data<Mutex<SystemStatus>>) -> std::io::Result<()> {
     let server_address = format!("{}:{}", config.host, config.port);
-    println!("Starting server at http://{}", server_address);
+    println!("Starting server at http://{}      (http://localhost:{})", server_address, config.port);
 
     HttpServer::new(move || {
         App::new()
-            .app_data(Data::clone(&status_mutex))
+            .app_data(status_mutex.clone())
+            .wrap(middleware::NormalizePath::default())
             .service(serve_api)
-            .service(fs::Files::new("/files", "./www").show_files_listing())//Order is important...
+            .service(fs::Files::new("/view", "./www/view").show_files_listing()) // Order is important...
             .service(fs::Files::new("/", "./www").index_file("index.html"))
             //                   //TODO user authentication
             //.default_service() //TODO custom 404 handling

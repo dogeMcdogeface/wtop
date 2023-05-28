@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Async JSON Request</title>
+    <script>
+        // Function to make the asynchronous request and handle the response
+        function makeRequest() {
+            var request = new XMLHttpRequest();
+            request.open('GET', '/api/authorized', true);
+
+            request.onload = function() {
+                if (request.status >= 200 && request.status < 400) {
+                    var response = JSON.parse(request.responseText);
+                    displayValues(response);
+                } else {
+                    console.error('Error: ' + request.status);
+                }
+            };
+
+            request.onerror = function() {
+                console.error('Request failed');
+            };
+
+            request.send();
+        }
+
+        // Function to display the values in labels
+        function displayValues(response) {
+            document.getElementById('content').textContent = response.content;
+            document.getElementById('read_at').textContent = response.response.read_at;
+            document.getElementById('governor').textContent = response.response.governor.value;
+            document.getElementById('temp1').textContent = response.response.temp1.value;
+            document.getElementById('freq1').textContent = response.response.freq1.value;
+            document.getElementById('gpu_temp').textContent = response.response.gpu_temp.value;
+            document.getElementById('zzz').textContent = response.response.zzz.value;
+        }
+    </script>
+</head>
+<body>
+<h1>Async JSON Request Example</h1>
+
+<button onclick="makeRequest()">Fetch JSON</button>
+
+<h2>Values:</h2>
+
+<label>Content: <span id="content"></span></label><br>
+<label>Read At: <span id="read_at"></span></label><br>
+<label>Governor: <span id="governor"></span></label><br>
+<label>Temp1: <span id="temp1"></span></label><br>
+<label>Freq1: <span id="freq1"></span></label><br>
+<label>GPU Temp: <span id="gpu_temp"></span></label><br>
+<label>ZZZ: <span id="zzz"></span></label><br>
+</body>
+</html>
