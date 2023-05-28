@@ -1,6 +1,6 @@
-use std::fs;
 use std::sync::Mutex;
 
+use actix_files as fs;
 use actix_web::{App, get, HttpRequest, HttpResponse, HttpServer, Responder, web};
 use actix_web::web::Data;
 use serde::{Deserialize, Serialize};
@@ -16,13 +16,6 @@ pub struct Config {
 
 
 //------------------------------------------------------------------------------------------------//
-#[get("/")]
-async fn serve_index() -> impl Responder {
-    // Read the contents of the index.html file
-    let content = fs::read_to_string("./www/index.html").unwrap();
-    HttpResponse::Ok().body(content)
-}
-
 #[get("/api/{path:.*}")]
 async fn serve_api(req: HttpRequest, path: web::Path<String>) -> impl Responder {
     let path_inner = path.into_inner();
@@ -48,7 +41,6 @@ async fn serve_api(req: HttpRequest, path: web::Path<String>) -> impl Responder 
 }
 
 
-
 //------------------------------------------------------------------------------------------------//
 pub async fn run(config: Config, status_mutex: Data<Mutex<SystemStatus>>) -> std::io::Result<()> {
     let server_address = format!("{}:{}", config.host, config.port);
@@ -57,8 +49,9 @@ pub async fn run(config: Config, status_mutex: Data<Mutex<SystemStatus>>) -> std
     HttpServer::new(move || {
         App::new()
             .app_data(Data::clone(&status_mutex))
-            .service(serve_index)
             .service(serve_api)
+            .service(fs::Files::new("/files", "./www").show_files_listing())//Order is important...
+            .service(fs::Files::new("/", "./www").index_file("index.html"))
     })
         .bind(server_address)?
         .run()
@@ -68,17 +61,18 @@ pub async fn run(config: Config, status_mutex: Data<Mutex<SystemStatus>>) -> std
 
 
 //------------------------------------------------------------------------------------------------//
-//                               TESTS                                                            //
+//                                          TESTS                                                 //
 //------------------------------------------------------------------------------------------------//
 #[cfg(test)]
 mod tests {
     use super::*;
     use actix_web::{test, App};
+    use std::fs::read_to_string;
 
     #[actix_rt::test]
     async fn test_serve_index() {
         // Create an Actix web application instance with the `index()` service
-        let mut app = test::init_service(App::new().service(serve_index)).await;
+        let mut app = test::init_service(App::new().service(fs::Files::new("/", "./www").index_file("index.html"))).await;
 
         // Send a GET request to the root path "/"
         let req = test::TestRequest::get().uri("/").to_request();
@@ -86,7 +80,7 @@ mod tests {
 
         // Assert that the response status is OK and the body contains the expected contents
         assert!(resp.status().is_success());
-        let expected_content = fs::read_to_string("./www/index.html").unwrap();
+        let expected_content = read_to_string("./www/index.html").unwrap();
         let body = test::read_body(resp).await;
         assert_eq!(body, expected_content);
     }
