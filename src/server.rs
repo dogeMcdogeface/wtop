@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::system_status::SystemStatus;
 
-//------------------------------------------------------------------------------------------------//
+//------------------------------- CONFIG STRUCT --------------------------------------------------//
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
     pub host: String,
@@ -15,7 +15,7 @@ pub struct Config {
 }
 
 
-//------------------------------------------------------------------------------------------------//
+//------------------------------- CUSTOM HANDLERS ------------------------------------------------//
 #[get("/api/{path:.*}")]
 async fn serve_api(req: HttpRequest, path: web::Path<String>) -> impl Responder {
     let path_inner = path.into_inner();
@@ -40,8 +40,7 @@ async fn serve_api(req: HttpRequest, path: web::Path<String>) -> impl Responder 
     })
 }
 
-
-//------------------------------------------------------------------------------------------------//
+//------------------------------- SERVER INIT ----------------------------------------------------//
 pub async fn run(config: Config, status_mutex: Data<Mutex<SystemStatus>>) -> std::io::Result<()> {
     let server_address = format!("{}:{}", config.host, config.port);
     println!("Starting server at http://{}", server_address);
