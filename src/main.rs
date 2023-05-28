@@ -16,7 +16,7 @@ impl Default for Config {
     fn default() -> Self {
         Config {
             server: server::Config {
-                host: String::from("127.0.0.1"),
+                host: String::from("127.0.0.1"),    //0.0.0.0  if configured to use this special address, the application will listen to any IP address configured on the machine.
                 port: String::from("3680"),
             },
             observer: system_observer::Config {
