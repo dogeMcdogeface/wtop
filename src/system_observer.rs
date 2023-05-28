@@ -7,7 +7,7 @@ use chrono::Utc;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use crate::system_status::SystemStatus;
-use crate::system_status::StatusValue;
+use crate::system_status::SystemStatusValue;
 
 //------------------------------------------------------------------------------------------------//
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -33,11 +33,11 @@ pub fn start(config: Config) -> Data<Mutex<SystemStatus>> {
 fn read_stats(config: &Config) -> SystemStatus {
     let system_status = SystemStatus {
         read_at: Utc::now(),
-        governor: StatusValue::new_if_enabled(read_governor, &config.permissions.governor),
-        temp1: StatusValue::new_if_enabled(read_temp1, &config.permissions.temp1),
-        freq1: StatusValue::new_if_enabled(read_freq1, &config.permissions.freq1),
-        gpu_temp: StatusValue::new_if_enabled(read_gpu_temp, &config.permissions.gpu_temp),
-        zzz: StatusValue::new_if_enabled(read_zzz, &config.permissions.zzz),
+        governor: SystemStatusValue::new_if_enabled(read_governor, &config.permissions.governor),
+        temp1: SystemStatusValue::new_if_enabled(read_temp1, &config.permissions.temp1),
+        freq1: SystemStatusValue::new_if_enabled(read_freq1, &config.permissions.freq1),
+        gpu_temp: SystemStatusValue::new_if_enabled(read_gpu_temp, &config.permissions.gpu_temp),
+        zzz: SystemStatusValue::new_if_enabled(read_zzz, &config.permissions.zzz),
     };
     return system_status;
 }
@@ -76,7 +76,7 @@ fn read_zzz() -> u64 {
 
 
 //------------------------------------------------------------------------------------------------//
-//                               TESTS                                                            //
+//                                          TESTS                                                 //
 //------------------------------------------------------------------------------------------------//
 #[cfg(test)]
 mod tests {
